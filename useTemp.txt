@@ -1,0 +1,16 @@
+// Example 1: Check the Account object.
+// This will return true only if you have tracking enabled AND have made changes to tracked fields on at least one Account.
+Boolean accountHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('Account');
+System.debug('Does any Account history record exist? -> ' + accountHistoryExists);
+
+// Example 2: Check a custom object where you know history exists.
+Boolean customHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('My_Project__c');
+System.debug('Does any My_Project__c history record exist? -> ' + customHistoryExists);
+
+// Example 3: Check a custom object where tracking is on, but no records have been changed yet.
+Boolean newObjectHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('New_Tracked_Object__c');
+System.debug('Does any New_Tracked_Object__c history record exist? -> ' + newObjectHistoryExists); // Will likely be false
+
+// Example 4: Check an object where tracking is disabled. The method will exit quickly.
+Boolean contactHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('Contact');
+System.debug('Does any Contact history record exist? -> ' + contactHistoryExists); // False if tracking is off
