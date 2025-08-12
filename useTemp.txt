@@ -1,16 +1,25 @@
-// Example 1: Check the Account object.
-// This will return true only if you have tracking enabled AND have made changes to tracked fields on at least one Account.
-Boolean accountHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('Account');
-System.debug('Does any Account history record exist? -> ' + accountHistoryExists);
+// Get the metadata for the Account object
+Schema.SObjectType accountType = Schema.getGlobalDescribe().get('Account');
+Map<String, Schema.SObjectField> fieldMap = accountType.getDescribe().fields.getMap();
 
-// Example 2: Check a custom object where you know history exists.
-Boolean customHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('My_Project__c');
-System.debug('Does any My_Project__c history record exist? -> ' + customHistoryExists);
+// List of specific Account fields to check
+List<String> fieldsToCheck = new List<String>{'Name', 'Phone', 'AnnualRevenue', 'OwnerId'};
 
-// Example 3: Check a custom object where tracking is on, but no records have been changed yet.
-Boolean newObjectHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('New_Tracked_Object__c');
-System.debug('Does any New_Tracked_Object__c history record exist? -> ' + newObjectHistoryExists); // Will likely be false
+System.debug('--- PROOF: Checking isHistoryTracked() method ---');
 
-// Example 4: Check an object where tracking is disabled. The method will exit quickly.
-Boolean contactHistoryExists = ObjectHistoryChecker.doesAnyHistoryRecordExist('Contact');
-System.debug('Does any Contact history record exist? -> ' + contactHistoryExists); // False if tracking is off
+for (String fieldName : fieldsToCheck) {
+    if (fieldMap.containsKey(fieldName)) {
+        // 1. Get the field token
+        Schema.SObjectField fieldToken = fieldMap.get(fieldName);
+
+        // 2. Get the field's DescribeResult
+        Schema.DescribeFieldResult fieldDescribe = fieldToken.getDescribe();
+
+        // 3. Call the isHistoryTracked() method and print the result
+        // This line directly proves the method exists and works.
+        Boolean isTracked = fieldDescribe.isHistoryTracked();
+        
+        System.debug('Field: ' + fieldDescribe.getLabel() + ' (' + fieldName + ') | Is History Tracked? -> ' + isTracked);
+    }
+}
+System.debug('--- PROOF COMPLETE ---');
