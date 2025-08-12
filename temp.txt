@@ -1,0 +1,45 @@
+public class ObjectHistoryUtils {
+
+    /**
+     * @description Checks if any field on a given sObject has Field History Tracking enabled.
+     * @param objectApiName The API name of the sObject (e.g., 'Account', 'My_Custom_Object__c').
+     * @return Boolean - True if at least one field is tracked, otherwise false.
+     */
+    public static Boolean isAnyFieldHistoryTracked(String objectApiName) {
+        // Return false immediately if the input is null or blank.
+        if (String.isBlank(objectApiName)) {
+            return false;
+        }
+
+        // Get the sObject token (metadata representation) from the global describe map.
+        Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
+
+        // If the object API name is invalid, the objectType will be null.
+        if (objectType == null) {
+            System.debug('Error: The object "' + objectApiName + '" was not found in the schema.');
+            return false;
+        }
+
+        // Get the map of all fields for the object.
+        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
+
+        // Iterate through each field's metadata.
+        for (Schema.SObjectField fieldToken : fieldMap.values()) {
+            // Get the specific describe result for the field.
+            Schema.DescribeFieldResult fieldDescribe = fieldToken.getDescribe();
+
+            // The isHistoryTracked() method returns true if Field History Tracking is on.
+            if (fieldDescribe.isHistoryTracked()) {
+                // For debugging: print which field was found.
+                System.debug('Found tracked field: ' + fieldDescribe.getName() + ' on object ' + objectApiName);
+                
+                // As soon as we find one, we can stop and return true.
+                return true;
+            }
+        }
+
+        // If the loop completes without finding any tracked fields, return false.
+        System.debug('No history tracked fields were found for object: ' + objectApiName);
+        return false;
+    }
+}
