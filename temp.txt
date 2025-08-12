@@ -1,45 +1,73 @@
-public class ObjectHistoryUtils {
+public class ObjectHistoryChecker {
 
     /**
+     * ⚙️ METADATA CHECK
      * @description Checks if any field on a given sObject has Field History Tracking enabled.
      * @param objectApiName The API name of the sObject (e.g., 'Account', 'My_Custom_Object__c').
-     * @return Boolean - True if at least one field is tracked, otherwise false.
+     * @return Boolean - True if at least one field is configured for tracking, otherwise false.
      */
-    public static Boolean isAnyFieldHistoryTracked(String objectApiName) {
-        // Return false immediately if the input is null or blank.
+    public static Boolean isTrackingEnabledForAnyField(String objectApiName) {
         if (String.isBlank(objectApiName)) {
             return false;
         }
 
-        // Get the sObject token (metadata representation) from the global describe map.
         Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
-
-        // If the object API name is invalid, the objectType will be null.
         if (objectType == null) {
-            System.debug('Error: The object "' + objectApiName + '" was not found in the schema.');
+            return false; // Object doesn't exist
+        }
+
+        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
+        for (Schema.SObjectField fieldToken : fieldMap.values()) {
+            if (fieldToken.getDescribe().isHistoryTracked()) {
+                return true; // Found a field configured for tracking
+            }
+        }
+        return false; // No fields are configured for tracking
+    }
+
+    /**
+     * 💾 DATA CHECK
+     * @description Checks if any actual history records exist for a given sObject.
+     * @param objectApiName The API name of the sObject (e.g., 'Account', 'My_Custom_Object__c').
+     * @return Boolean - True if history tracking is enabled AND at least one history record exists.
+     */
+    public static Boolean doesAnyHistoryRecordExist(String objectApiName) {
+        // Step 1: First, check if tracking is even enabled at the metadata level.
+        // If not, no history records can possibly exist.
+        if (!isTrackingEnabledForAnyField(objectApiName)) {
+            System.debug('History tracking is not enabled for any field on ' + objectApiName + '. No records can exist.');
             return false;
         }
 
-        // Get the map of all fields for the object.
-        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
-
-        // Iterate through each field's metadata.
-        for (Schema.SObjectField fieldToken : fieldMap.values()) {
-            // Get the specific describe result for the field.
-            Schema.DescribeFieldResult fieldDescribe = fieldToken.getDescribe();
-
-            // The isHistoryTracked() method returns true if Field History Tracking is on.
-            if (fieldDescribe.isHistoryTracked()) {
-                // For debugging: print which field was found.
-                System.debug('Found tracked field: ' + fieldDescribe.getName() + ' on object ' + objectApiName);
-                
-                // As soon as we find one, we can stop and return true.
-                return true;
-            }
+        // Step 2: If tracking is enabled, determine the history object's API name.
+        String historyApiName;
+        if (objectApiName.toLowerCase().endsWith('__c')) {
+            // It's a custom object (e.g., My_Object__c -> My_Object__History)
+            historyApiName = objectApiName.replace('__c', '__History');
+        } else {
+            // It's a standard object (e.g., Account -> AccountHistory)
+            historyApiName = objectApiName + 'History';
         }
 
-        // If the loop completes without finding any tracked fields, return false.
-        System.debug('No history tracked fields were found for object: ' + objectApiName);
-        return false;
+        // Step 3: Use a dynamic SOQL query to check for the existence of at least one record.
+        // LIMIT 1 is highly efficient as the database stops searching after finding the first record.
+        String soqlQuery = 'SELECT Id FROM ' + historyApiName + ' LIMIT 1';
+
+        try {
+            List<SObject> historyRecords = Database.query(soqlQuery);
+            
+            // If the list is not empty, it means we found at least one record.
+            if (!historyRecords.isEmpty()) {
+                System.debug('Success: Found existing history records for ' + objectApiName);
+                return true;
+            } else {
+                System.debug('Tracking is enabled for ' + objectApiName + ', but no history records exist yet.');
+                return false;
+            }
+        } catch (Exception e) {
+            // This can happen if the history object isn't queryable, which for our purpose means no records.
+            System.debug('Could not query the history for ' + objectApiName + '. Error: ' + e.getMessage());
+            return false;
+        }
     }
 }
