@@ -1,9 +1,27 @@
-<!-- Body -->
+<template>
+    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+
+            <!-- Header -->
+            <header class="slds-modal__header">
+                <h2 class="slds-text-heading_medium">
+                    Select classification records to export:
+                </h2>
+            </header>
+
+            <!-- Body -->
             <div class="slds-modal__content slds-p-around_medium" style="max-height:300px; overflow-y:auto;">
                 <table class="slds-table slds-table_bordered slds-table_cell-buffer">
                     <thead>
                         <tr class="slds-line-height_reset">
-                            <th></th>
+                            <th>
+                                <!-- Master Checkbox -->
+                                <lightning-input 
+                                    type="checkbox" 
+                                    onchange={handleSelectAll}
+                                    checked={isAllSelected}>
+                                </lightning-input>
+                            </th>
                             <th scope="col"><div class="slds-truncate">Name</div></th>
                             <th scope="col"><div class="slds-truncate">Type</div></th>
                         </tr>
@@ -14,6 +32,7 @@
                                 <td>
                                     <lightning-input type="checkbox"
                                         value={record.Id}
+                                        checked={selectedRecordIds.has(record.Id)}
                                         onchange={handleCheckboxChange}>
                                     </lightning-input>
                                 </td>
@@ -24,3 +43,88 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Selected count -->
+            <template if:true={hasSelected}>
+                <div class="slds-p-horizontal_medium slds-p-vertical_small">
+                    <p class="slds-text-body_small slds-text-color_success">
+                        {selectedCount} classification record(s) selected for export.
+                    </p>
+                </div>
+            </template>
+
+            <!-- Footer -->
+            <footer class="slds-modal__footer">
+                <lightning-button variant="neutral" label="Cancel"
+                    onclick={handleCancel}></lightning-button>
+                <lightning-button variant="brand" label="Download"
+                    onclick={handleDownload}
+                    disabled={isDownloadDisabled}></lightning-button>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>
+
+
+
+import { LightningElement, api, track } from 'lwc';
+
+export default class ClassificationExportModal extends LightningElement {
+    @api classificationRecords = [];
+    @track selectedRecordIds = new Set();
+
+    // Handle individual checkbox
+    handleCheckboxChange(event) {
+        const recordId = event.target.value;
+        if (event.target.checked) {
+            this.selectedRecordIds.add(recordId);
+        } else {
+            this.selectedRecordIds.delete(recordId);
+        }
+        this.selectedRecordIds = new Set(this.selectedRecordIds); // reactivity
+    }
+
+    // Handle Select All checkbox
+    handleSelectAll(event) {
+        if (event.target.checked) {
+            this.selectedRecordIds = new Set(this.classificationRecords.map(r => r.Id));
+        } else {
+            this.selectedRecordIds.clear();
+            this.selectedRecordIds = new Set(this.selectedRecordIds);
+        }
+    }
+
+    // Download only selected
+    handleDownload() {
+        const selected = this.classificationRecords.filter(record =>
+            this.selectedRecordIds.has(record.Id)
+        );
+        this.dispatchEvent(new CustomEvent('download', { detail: selected }));
+    }
+
+    // Cancel
+    handleCancel() {
+        this.dispatchEvent(new CustomEvent('cancel'));
+    }
+
+    // Computed
+    get isDownloadDisabled() {
+        return this.selectedRecordIds.size === 0;
+    }
+
+    get hasSelected() {
+        return this.selectedRecordIds.size > 0;
+    }
+
+    get selectedCount() {
+        return this.selectedRecordIds.size;
+    }
+
+    get isAllSelected() {
+        return (
+            this.classificationRecords.length > 0 &&
+            this.selectedRecordIds.size === this.classificationRecords.length
+        );
+    }
+}
