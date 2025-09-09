@@ -1,73 +1,26 @@
-public class ObjectHistoryChecker {
-
-    /**
-     * ⚙️ METADATA CHECK
-     * @description Checks if any field on a given sObject has Field History Tracking enabled.
-     * @param objectApiName The API name of the sObject (e.g., 'Account', 'My_Custom_Object__c').
-     * @return Boolean - True if at least one field is configured for tracking, otherwise false.
-     */
-    public static Boolean isTrackingEnabledForAnyField(String objectApiName) {
-        if (String.isBlank(objectApiName)) {
-            return false;
-        }
-
-        Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
-        if (objectType == null) {
-            return false; // Object doesn't exist
-        }
-
-        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
-        for (Schema.SObjectField fieldToken : fieldMap.values()) {
-            if (fieldToken.getDescribe().isHistoryTracked()) {
-                return true; // Found a field configured for tracking
-            }
-        }
-        return false; // No fields are configured for tracking
-    }
-
-    /**
-     * 💾 DATA CHECK
-     * @description Checks if any actual history records exist for a given sObject.
-     * @param objectApiName The API name of the sObject (e.g., 'Account', 'My_Custom_Object__c').
-     * @return Boolean - True if history tracking is enabled AND at least one history record exists.
-     */
-    public static Boolean doesAnyHistoryRecordExist(String objectApiName) {
-        // Step 1: First, check if tracking is even enabled at the metadata level.
-        // If not, no history records can possibly exist.
-        if (!isTrackingEnabledForAnyField(objectApiName)) {
-            System.debug('History tracking is not enabled for any field on ' + objectApiName + '. No records can exist.');
-            return false;
-        }
-
-        // Step 2: If tracking is enabled, determine the history object's API name.
-        String historyApiName;
-        if (objectApiName.toLowerCase().endsWith('__c')) {
-            // It's a custom object (e.g., My_Object__c -> My_Object__History)
-            historyApiName = objectApiName.replace('__c', '__History');
-        } else {
-            // It's a standard object (e.g., Account -> AccountHistory)
-            historyApiName = objectApiName + 'History';
-        }
-
-        // Step 3: Use a dynamic SOQL query to check for the existence of at least one record.
-        // LIMIT 1 is highly efficient as the database stops searching after finding the first record.
-        String soqlQuery = 'SELECT Id FROM ' + historyApiName + ' LIMIT 1';
-
-        try {
-            List<SObject> historyRecords = Database.query(soqlQuery);
-            
-            // If the list is not empty, it means we found at least one record.
-            if (!historyRecords.isEmpty()) {
-                System.debug('Success: Found existing history records for ' + objectApiName);
-                return true;
-            } else {
-                System.debug('Tracking is enabled for ' + objectApiName + ', but no history records exist yet.');
-                return false;
-            }
-        } catch (Exception e) {
-            // This can happen if the history object isn't queryable, which for our purpose means no records.
-            System.debug('Could not query the history for ' + objectApiName + '. Error: ' + e.getMessage());
-            return false;
-        }
-    }
-}
+<!-- Body -->
+            <div class="slds-modal__content slds-p-around_medium" style="max-height:300px; overflow-y:auto;">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th></th>
+                            <th scope="col"><div class="slds-truncate">Name</div></th>
+                            <th scope="col"><div class="slds-truncate">Type</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={classificationRecords} for:item="record">
+                            <tr key={record.Id}>
+                                <td>
+                                    <lightning-input type="checkbox"
+                                        value={record.Id}
+                                        onchange={handleCheckboxChange}>
+                                    </lightning-input>
+                                </td>
+                                <td>{record.Name}</td>
+                                <td>{record.Type__c}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
