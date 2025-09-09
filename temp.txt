@@ -11,37 +11,14 @@
 
             <!-- Body -->
             <div class="slds-modal__content slds-p-around_medium" style="max-height:300px; overflow-y:auto;">
-                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
-                    <thead>
-                        <tr class="slds-line-height_reset">
-                            <th>
-                                <!-- Master Checkbox -->
-                                <lightning-input 
-                                    type="checkbox" 
-                                    onchange={handleSelectAll}
-                                    checked={isAllSelected}>
-                                </lightning-input>
-                            </th>
-                            <th scope="col"><div class="slds-truncate">Name</div></th>
-                            <th scope="col"><div class="slds-truncate">Type</div></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={classificationRecords} for:item="record">
-                            <tr key={record.Id}>
-                                <td>
-                                    <lightning-input type="checkbox"
-                                        value={record.Id}
-                                        checked={selectedRecordIds.has(record.Id)}
-                                        onchange={handleCheckboxChange}>
-                                    </lightning-input>
-                                </td>
-                                <td>{record.Name}</td>
-                                <td>{record.Type__c}</td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+                <lightning-datatable
+                    key-field="Id"
+                    data={classificationRecords}
+                    columns={columns}
+                    onrowselection={handleRowSelection}
+                    hide-checkbox-column={false}
+                >
+                </lightning-datatable>
             </div>
 
             <!-- Selected count -->
@@ -67,64 +44,43 @@
 </template>
 
 
-
 import { LightningElement, api, track } from 'lwc';
 
+const COLUMNS = [
+    { label: 'Class Code', fieldName: 'ClassCode__c' },
+    { label: 'Country Code', fieldName: 'CountryCode__c' },
+    { label: 'Object Name', fieldName: 'ObjectName__c' },
+    { label: 'Purge Date Criteria', fieldName: 'PurgeCriteria__c' }
+];
+
 export default class ClassificationExportModal extends LightningElement {
-    @api classificationRecords = [];
-    @track selectedRecordIds = new Set();
+    @api classificationRecords = []; // input from parent
+    columns = COLUMNS;
 
-    // Handle individual checkbox
-    handleCheckboxChange(event) {
-        const recordId = event.target.value;
-        if (event.target.checked) {
-            this.selectedRecordIds.add(recordId);
-        } else {
-            this.selectedRecordIds.delete(recordId);
-        }
-        this.selectedRecordIds = new Set(this.selectedRecordIds); // reactivity
+    @track selectedRows = [];
+
+    // Fires whenever row selection changes
+    handleRowSelection(event) {
+        this.selectedRows = event.detail.selectedRows;
     }
 
-    // Handle Select All checkbox
-    handleSelectAll(event) {
-        if (event.target.checked) {
-            this.selectedRecordIds = new Set(this.classificationRecords.map(r => r.Id));
-        } else {
-            this.selectedRecordIds.clear();
-            this.selectedRecordIds = new Set(this.selectedRecordIds);
-        }
-    }
-
-    // Download only selected
     handleDownload() {
-        const selected = this.classificationRecords.filter(record =>
-            this.selectedRecordIds.has(record.Id)
-        );
-        this.dispatchEvent(new CustomEvent('download', { detail: selected }));
+        this.dispatchEvent(new CustomEvent('download', { detail: this.selectedRows }));
     }
 
-    // Cancel
     handleCancel() {
         this.dispatchEvent(new CustomEvent('cancel'));
     }
 
-    // Computed
     get isDownloadDisabled() {
-        return this.selectedRecordIds.size === 0;
+        return this.selectedRows.length === 0;
     }
 
     get hasSelected() {
-        return this.selectedRecordIds.size > 0;
+        return this.selectedRows.length > 0;
     }
 
     get selectedCount() {
-        return this.selectedRecordIds.size;
-    }
-
-    get isAllSelected() {
-        return (
-            this.classificationRecords.length > 0 &&
-            this.selectedRecordIds.size === this.classificationRecords.length
-        );
+        return this.selectedRows.length;
     }
 }
