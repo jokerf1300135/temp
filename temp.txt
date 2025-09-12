@@ -1,86 +1,368 @@
-<template>
-    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
-        <div class="slds-modal__container">
+Slide 1: Title Slide
+Salesforce Einstein for Service: A Deep Dive
 
-            <!-- Header -->
-            <header class="slds-modal__header">
-                <h2 class="slds-text-heading_medium">
-                    Select classification records to export:
-                </h2>
-            </header>
+Powering Smarter, Faster, and More Personalized Customer Service
 
-            <!-- Body -->
-            <div class="slds-modal__content slds-p-around_medium" style="max-height:300px; overflow-y:auto;">
-                <lightning-datatable
-                    key-field="Id"
-                    data={classificationRecords}
-                    columns={columns}
-                    onrowselection={handleRowSelection}
-                    hide-checkbox-column={false}
-                >
-                </lightning-datatable>
-            </div>
+Presenter: [Your Name/Your Team Name]
+Date: [Date of Presentation]
 
-            <!-- Selected count -->
-            <template if:true={hasSelected}>
-                <div class="slds-p-horizontal_medium slds-p-vertical_small">
-                    <p class="slds-text-body_small slds-text-color_success">
-                        {selectedCount} classification record(s) selected for export.
-                    </p>
-                </div>
-            </template>
+Slide 2: Agenda
+What We'll Cover Today
 
-            <!-- Footer -->
-            <footer class="slds-modal__footer">
-                <lightning-button variant="neutral" label="Cancel"
-                    onclick={handleCancel}></lightning-button>
-                <lightning-button variant="brand" label="Download"
-                    onclick={handleDownload}
-                    disabled={isDownloadDisabled}></lightning-button>
-            </footer>
-        </div>
-    </section>
-    <div class="slds-backdrop slds-backdrop_open"></div>
-</template>
+Einstein Bots: Automating Routine Interactions
 
+Einstein Case Classification: Instant Case Field Prediction
 
-import { LightningElement, api, track } from 'lwc';
+Einstein Case Wrap-Up: Accelerating After-Conversation Work
 
-const COLUMNS = [
-    { label: 'Class Code', fieldName: 'ClassCode__c' },
-    { label: 'Country Code', fieldName: 'CountryCode__c' },
-    { label: 'Object Name', fieldName: 'ObjectName__c' },
-    { label: 'Purge Date Criteria', fieldName: 'PurgeCriteria__c' }
-];
+Einstein Case Routing: Intelligent Workload Distribution
 
-export default class ClassificationExportModal extends LightningElement {
-    @api classificationRecords = []; // input from parent
-    columns = COLUMNS;
+Einstein Article Recommendations: The Right Knowledge, Instantly
 
-    @track selectedRows = [];
+Einstein Reply Recommendations: Consistent and Quick Responses
 
-    // Fires whenever row selection changes
-    handleRowSelection(event) {
-        this.selectedRows = event.detail.selectedRows;
-    }
+Einstein Conversation Mining (Pilot): Uncovering Service Insights
 
-    handleDownload() {
-        this.dispatchEvent(new CustomEvent('download', { detail: this.selectedRows }));
-    }
+Service Analytics: Data-Driven Performance
 
-    handleCancel() {
-        this.dispatchEvent(new CustomEvent('cancel'));
-    }
+Q&A
 
-    get isDownloadDisabled() {
-        return this.selectedRows.length === 0;
-    }
+Speaker Notes:
+"Welcome, everyone. Today, we're going to take a deep dive into the Salesforce Einstein for Service suite. Our goal is to move beyond the buzzwords and understand exactly how each of these AI-powered tools works, how they benefit our agents and customers, and how they fit into our overall service strategy. We'll walk through eight key features, from initial customer contact with Bots to post-interaction analysis with Conversation Mining and Analytics. Let's get started."
 
-    get hasSelected() {
-        return this.selectedRows.length > 0;
-    }
+Slide 3: Einstein Bots (Bot Builder)
+What is it?
+Intelligent, automated chatbots that integrate directly with your CRM data and service channels (like web chat, SMS, and messaging apps). They are built declaratively using the Bot Builder.
 
-    get selectedCount() {
-        return this.selectedRows.length;
-    }
-}
+Key Functions:
+
+Deflect Tier-1 Issues: Handle common, repetitive questions like "What's my order status?" or "How do I reset my password?"
+
+Gather Information: Collect initial customer details and triage the issue before handing off to a human agent.
+
+24/7 Availability: Provide instant support to customers anytime, anywhere.
+
+Seamless Agent Handoff: Transfer the full conversation history to an agent when an issue requires human intervention.
+
+Speaker Notes:
+"First up, Einstein Bots. Think of these as your digital front-line agents. They aren't just simple Q&A bots; they are deeply integrated into Salesforce. They can authenticate users, look up records like orders or cases, create new records, and make decisions based on CRM data. The real power here is freeing up our human agents from mundane, repetitive tasks, allowing them to focus on the complex, high-value customer problems that require their expertise. We build and manage them using a user-friendly, point-and-click interface called the Bot Builder."
+
+Slide 4: Bots: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud and Digital Engagement licenses are required.
+
+Channels: At least one channel (e.g., Web Chat, Messaging) must be configured.
+
+Knowledge (Optional but Recommended): A well-maintained Salesforce Knowledge base can significantly improve bot effectiveness.
+
+Implementation Steps:
+
+Enable Einstein Bots: From Salesforce Setup.
+
+Run Guided Setup: Use a template to get started quickly.
+
+Build Dialogs: Map out conversation flows for specific tasks (e.g., Order Status).
+
+Define Entities & Variables: To capture and store customer information (like order numbers).
+
+Connect to Salesforce Data: Use flows to look up, create, or update records.
+
+Test & Activate: Test thoroughly in the Bot Builder preview before deploying to your channels.
+
+Speaker Notes:
+"So, what does it take to get a bot running? On the licensing side, we need both Service Cloud and Digital Engagement. The basic implementation is a step-by-step process within Setup. We'd start by enabling the feature, mapping out the conversational flows or 'dialogs,' and then connecting those dialogs to our Salesforce data using tools like Flow. Thorough testing is key before we let it talk to real customers."
+
+Slide 5: Einstein Case Classification
+What is it?
+An AI model that automatically recommends and populates picklist and checkbox fields on a case record based on the subject and description.
+
+How it works:
+
+Learns from Data: Einstein analyzes your historical case data (at least 400 closed cases are recommended) to identify patterns between the text inputs and the final field values.
+
+Builds a Predictive Model: It creates a unique model tailored to your organization's data.
+
+Recommends & Fills: When a new case is created (from any channel), Einstein instantly provides predictions for fields like Reason, Priority, or Type. It can either recommend values for an agent to confirm or automatically fill them with a high confidence score.
+
+Speaker Notes:
+"Next, let's talk about efficiency from the moment a case is created. Einstein Case Classification acts like an experienced agent who instantly knows how to categorize a new issue. By analyzing the text from an email or web form, it predicts the correct values for key fields. This has a dual benefit: first, it saves agents clicks and time on every single case. Second, and just as important, it dramatically improves data consistency and accuracy, which is crucial for reliable reporting and routing down the line."
+
+Slide 6: Case Classification: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on license is required.
+
+Data Volume: A minimum of 400 closed cases from the last 6 months for each field you want to predict. More data is better for accuracy.
+
+Data Quality: Consistent and accurate historical data is crucial for building a reliable model.
+
+Implementation Steps:
+
+Launch Setup Flow: Navigate to Einstein Classification in Setup.
+
+Select Fields: Choose the picklist or checkbox fields you want Einstein to predict.
+
+Build Model: Einstein analyzes your data. This can take several hours to complete.
+
+Review Performance: Use the Prediction Performance dashboard to see how accurate your model is.
+
+Configure Automation: Choose your automation level: recommend values for agent confirmation, or auto-populate fields when confidence is high.
+
+Activate: Turn the model on.
+
+Speaker Notes:
+"The key requirement for Case Classification is data. We need at least 400 recent, closed cases for the AI to learn from. The setup itself is a guided flow where we tell Einstein which fields to focus on. After it builds the model, we get a dashboard to check its accuracy and can then decide if we want Einstein to simply suggest values or to automatically fill them in for our agents."
+
+Slide 7: Einstein Case Wrap-Up
+What is it?
+A feature that predicts and recommends final values for case fields when an agent is concluding a conversation in the Service Console.
+
+How it works:
+
+Analyzes Chat Transcripts: Einstein's AI reads the entire conversation transcript between the agent and the customer.
+
+Understands Intent & Outcome: It identifies the key topics, customer sentiment, and the resolution discussed.
+
+Recommends Field Values: Based on its analysis, it suggests values for fields you configure, such as Resolution Reason or Product Involved. The agent simply has to review and confirm.
+
+Speaker Notes:
+"Einstein Case Wrap-Up focuses on the end of an interaction—the after-conversation work. We all know this can be time-consuming for agents. Instead of manually filling out resolution details, Einstein does the heavy lifting. It reads the chat and says, 'Based on this conversation, it looks like the resolution was a 'password reset' and the product was 'Mobile App'.' The agent can then confirm with a single click. This reduces handle time, improves data quality, and lets our agents move to the next customer more quickly."
+
+Slide 8: Case Wrap-Up: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on.
+
+Channel: Must be using Chat or Messaging via Digital Engagement.
+
+Data Volume: A minimum of 1,000 closed chat transcripts are needed for the AI to learn from.
+
+Implementation Steps:
+
+Enable in Setup: Turn on Einstein Case Wrap-Up.
+
+Select Fields: Choose up to 5 case fields (picklist or checkbox) that you want Einstein to recommend at the end of a chat.
+
+Build Model: Einstein builds its predictive model based on your historical chat data.
+
+Add Component: Add the "Einstein Field Recommendations" component to your Lightning Service Console page for the Case object.
+
+Activate: Turn the model on for your agents.
+
+Speaker Notes:
+"Similar to other features, Case Wrap-Up has a data requirement—in this case, at least 1,000 chat transcripts for it to learn from effectively. The setup involves enabling the feature, telling it which fields to predict, and then adding the recommendation component to our Service Console so agents can see the suggestions."
+
+Slide 9: Einstein Case Routing
+What is it?
+Intelligent routing that sends cases to the best available agent based on agent skills, not just who is next in a queue.
+
+How it works:
+
+Combines Case Data & Agent Skills: It uses data from the case (either filled in by Case Classification or the customer) and matches it against the skills assigned to agents in Omni-Channel.
+
+Predictive Routing: Einstein predicts which agent is most likely to resolve the case efficiently based on their past performance and expertise.
+
+Attribute-Based: You define the criteria. It can route based on language, product knowledge, technical skill, or any other custom field on the case or agent record.
+
+Speaker Notes:
+"Traditional routing is often 'first-in, first-out'. Einstein Case Routing is much smarter. It acts as a dispatcher that knows the strengths of every agent on the team. It takes a case about a complex billing issue and routes it directly to a senior agent with a 'Billing Expert' skill, bypassing junior agents who might struggle. This gets the case to the right person on the first try, which is key to improving first-contact resolution and boosting customer satisfaction."
+
+Slide 10: Case Routing: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on.
+
+Omni-Channel: You must have Omni-Channel fully configured and in use.
+
+Skills-Based Routing: You must be using Skills-based routing (not queue-based) within Omni-Channel.
+
+Implementation Steps:
+
+Define Skills: Create Skills in Setup that represent agent expertise (e.g., "Spanish Language," "Billing Issues").
+
+Assign Skills to Agents: Use Service Resources to assign the correct skills to each agent.
+
+Enable Einstein Case Routing: Turn the feature on in Setup.
+
+Create Routing Rules: In your Omni-Channel routing configuration, add a rule that uses "Einstein Case Routing" to direct cases. This tells Omni-Channel to use Einstein's intelligence to find the agent with the best matching skills.
+
+Speaker Notes:
+"The main prerequisite here is a mature Omni-Channel setup that uses skills-based routing. We can't use this if we're just routing to basic queues. The work involves defining our agents' skills, assigning those skills, and then telling our routing logic to let Einstein make the decision on where the case should go."
+
+Slide 11: Einstein Article Recommendations
+What is it?
+An AI-driven feature that suggests relevant Salesforce Knowledge articles to agents directly within the Service Console.
+
+How it works:
+
+Analyzes Case Data: Einstein continuously reads the fields on the open case, looking at the subject, description, and other key identifiers.
+
+Finds Similarities: It compares this data to your existing knowledge base, looking for articles that have been successfully used to solve similar cases in the past.
+
+Recommends in Real-Time: The most relevant articles are surfaced in a component right next to the case, updating as the case details change. Agents can attach articles to the case or send them to the customer with one click.
+
+Speaker Notes:
+"Knowledge is power, but only if you can find it quickly. Einstein Article Recommendations eliminates the need for agents to manually search the knowledge base. As soon as a case is opened, Einstein is already working, acting as a research assistant. It pushes the most likely solutions directly to the agent's screen. This helps new agents ramp up faster, ensures consistent answers, and significantly reduces case resolution time because the answer is right at their fingertips."
+
+Slide 12: Article Recommendations: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on.
+
+Salesforce Knowledge: A functioning Knowledge Base with published articles is required.
+
+Data Volume: At least 100 closed cases with an article attached are recommended to start building the model.
+
+Implementation Steps:
+
+Enable in Setup: Turn on Einstein Article Recommendations.
+
+Select Case Fields: Choose the fields on the Case object (like Subject and Description) that Einstein should analyze to find relevant articles.
+
+Build Model: Einstein analyzes past cases and the articles that were attached to them to learn which articles solve which problems.
+
+Add Component: Add the "Einstein Article Recommendations" component to your Lightning Service Console page.
+
+Activate: Let Einstein start recommending articles to your agents.
+
+Speaker Notes:
+"To make this work, we need an active Salesforce Knowledge base. The setup is straightforward: we enable it, tell Einstein which case fields to pay attention to, and add the component to the console. The AI does the rest, learning from past cases where agents attached articles to solve issues."
+
+Slide 13: Einstein Reply Recommendations
+What is it?
+Real-time, AI-powered response suggestions for agents during live chat and messaging conversations.
+
+How it works:
+
+Learns from Transcripts: Einstein analyzes thousands of your past chat transcripts to identify common customer questions and the best, most effective agent replies.
+
+Builds a Reply Model: It creates a model of conversational patterns.
+
+Suggests in Context: During a live chat, as a customer asks a question, Einstein understands the context and surfaces a list of relevant, pre-approved replies. The agent can select the best one and send it instantly, or edit it before sending.
+
+Speaker Notes:
+"While Quick Text is great for static, common phrases, Einstein Reply Recommendations is dynamic and contextual. It understands the flow of the conversation. If a customer says 'My connection is slow,' Einstein will suggest replies that have successfully resolved that specific issue in the past. This ensures brand voice consistency, reduces typos, and dramatically speeds up conversations, allowing agents to handle more chats concurrently without sacrificing quality."
+
+Slide 14: Reply Recommendations: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on.
+
+Channel: Must be using Chat or Messaging via Digital Engagement.
+
+Data Volume: Minimum of 1,000 closed chat transcripts required.
+
+Implementation Steps:
+
+Enable in Setup: Turn on Einstein Reply Recommendations.
+
+Build Model: Einstein analyzes your chat history to identify common customer questions and find the most frequent, high-quality agent responses. This can take up to 48 hours.
+
+Review and Publish: Einstein presents you with a list of "Replies to Review." A manager must review these, edit them for clarity and brand voice, and then "Publish" them to make them available.
+
+Add Component: The replies will automatically appear in the "Einstein Replies" component in the Service Console during live chats.
+
+Speaker Notes:
+"For Reply Recommendations, the AI needs about 1,000 chat transcripts to learn our conversational patterns. A key part of the implementation is the human review step. Einstein suggests the replies, but a manager needs to review, refine, and officially publish them before agents can start using them. This ensures quality and consistency."
+
+Slide 15: Einstein Conversation Mining (Pilot)
+What is it?
+An analytics tool that uses AI to analyze conversation data (emails and chats) to uncover trends and identify areas for service improvement.
+
+Key Goals:
+
+Identify Common Issues: Discover the top reasons customers are contacting you.
+
+Optimize Bot & Self-Service: Find the most common, repetitive issues that are perfect candidates to be automated by a bot or addressed with a new knowledge article.
+
+Improve Agent Training: Pinpoint areas where agents may be struggling or where processes are inefficient.
+
+Surface Emerging Trends: Detect new problems or product issues as they arise.
+
+Speaker Notes:
+"Conversation Mining helps us step back and look at the forest, not just the trees. It analyzes thousands of conversations at once to tell us why customers are contacting us. For example, it might reveal that 15% of all our chats are about a specific, confusing step in the checkout process. That's a powerful insight. It tells us we can either build a bot intent to handle it, write a better help article, or feed this information back to the product team to fix the root cause. It turns our service conversations into a strategic business asset. (Remember to mention this is currently a pilot feature)."
+
+Slide 16: Conversation Mining: Implementation & Requirements
+Prerequisites:
+
+Licensing: Service Cloud Einstein Add-on.
+
+Status: This feature is currently in Pilot. This means availability is limited and requires nomination and approval from Salesforce.
+
+Data Volume: A large volume of historical conversation data (emails or chats) is required for meaningful analysis.
+
+Implementation Steps (General Pilot Process):
+
+Nomination & Provisioning: Work with our Salesforce Account Executive to get our org nominated and provisioned for the pilot.
+
+Data Source Configuration: Define which data sources (e.g., specific email queues or chat transcripts) you want Einstein to analyze.
+
+Model Build & Analysis: Einstein processes your data to group conversations into topics and identify trends.
+
+Review Report: Access the Conversation Mining report to view the insights and identify top contact drivers and automation opportunities.
+
+Speaker Notes:
+"It's important to remember this feature is in Pilot, so it's not generally available yet. If we wanted to pursue this, the first step would be to work with our Salesforce account team. The process would then involve setting up the data sources for analysis and then using the final report to find those key insights."
+
+Slide 17: Service Analytics
+What is it?
+A powerful analytics application with pre-built dashboards that provides deep, AI-driven insights into your service team's performance and customer data.
+
+Provides Answers To:
+
+Agent Performance: Who are my top performers? Where does my team need coaching?
+
+Channel Performance: Which channels are most effective? Where are backlogs forming?
+
+CSAT Drivers: What factors are most correlated with high (or low) customer satisfaction?
+
+Trending KPIs: How is our first-contact resolution, average handle time, and case volume changing over time?
+
+Predictive Insights: Uses AI to forecast case volume and identify accounts at risk of dissatisfaction.
+
+Speaker Notes:
+"Finally, Service Analytics brings everything together. It's more than just a standard report or dashboard. It's an intelligent application designed to help managers understand team performance and make data-driven decisions. You can slice and dice your data from any angle, explore trends, and even get predictive insights from Einstein. It helps us move from being reactive to proactive, allowing us to manage our service center based on deep insights, not just gut feelings."
+
+Slide 18: Service Analytics: Implementation & Requirements
+Prerequisites:
+
+Licensing: Requires a CRM Analytics license (formerly called Einstein Analytics or Tableau CRM). This is a separate license from the Service Cloud Einstein Add-on.
+
+Implementation Steps:
+
+Assign Permissions: Grant users the necessary CRM Analytics permission sets.
+
+Enable CRM Analytics: Turn the feature on in Setup.
+
+Run Setup Wizard: Launch the "Service Analytics" app creation wizard. This is a guided flow that lets you choose which standard and custom fields to include.
+
+Dataflow & Recipe Check: The wizard automatically creates dataflows that pull your Service Cloud data into CRM Analytics. You may need to troubleshoot or customize these if you have a complex org.
+
+Explore Dashboards: Once the dataflow runs successfully, you can begin exploring the pre-built dashboards.
+
+Speaker Notes:
+"The most important thing to know about Service Analytics is that it requires a separate CRM Analytics license. Once that's in place, implementation is a wizard-driven process. We run the setup, it creates the app and dashboards for us, and then the dataflows sync our Service Cloud data into the analytics platform."
+
+Slide 19: Putting It All Together
+The Einstein-Powered Service Journey
+
+A Bot deflects a simple query or gathers info for a complex one.
+
+A new case is created and Case Classification auto-populates fields.
+
+Case Routing sends it to the perfect agent.
+
+The agent sees Article Recommendations to help solve the case.
+
+During the chat, the agent uses Reply Recommendations for speed.
+
+The agent closes the case with help from Case Wrap-Up.
+
+Later, managers use Conversation Mining and Service Analytics to optimize the entire process.
+
+Speaker Notes:
+"As you can see, these tools aren't isolated features; they work together to create a seamless, intelligent ecosystem. From the moment a customer engages with us to long after the interaction is over, Einstein is working in the background to make the process faster, smarter, and more efficient for everyone involved."
+
+Slide 20: Q&A
+Questions?
